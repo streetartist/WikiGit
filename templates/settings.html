@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - 维基系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog"></i> 系统设置</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回仪表盘
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fab fa-github"></i> GitHub 配置</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="github_token" class="form-label">GitHub 个人访问令牌</label>
+                        <input type="password" class="form-control" id="github_token" name="github_token"
+                               value="{{ github_token }}" placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            令牌必须具有“repo”权限。用于仓库操作。
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="github_repo" class="form-label">GitHub 仓库</label>
+                        <input type="text" class="form-control" id="github_repo" name="github_repo"
+                               value="{{ github_repo }}" placeholder="用户名/仓库名">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            格式：所有者/仓库 (例如：octocat/Hello-World)
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存配置
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-info-circle"></i> 配置帮助</h6>
+            </div>
+            <div class="card-body">
+                <h6>获取 GitHub 令牌：</h6>
+                <ol class="small">
+                    <li>前往 GitHub 设置 → 开发者设置</li>
+                    <li>点击“个人访问令牌” → “令牌（经典）”</li>
+                    <li>生成具有“repo”范围的新令牌</li>
+                    <li>复制并粘贴令牌到此处</li>
+                </ol>
+
+                <h6 class="mt-3">仓库格式：</h6>
+                <p class="small">使用 <code>所有者/仓库</code> 格式。例如，如果您的仓库 URL 是 <code>https://github.com/myorg/docs</code>，则输入 <code>myorg/docs</code>。</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- User Management -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-users"></i> 用户管理</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>角色</th>
+                                <th>GitHub 令牌</th>
+                                <th>加入日期</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>
+                                    <i class="fas fa-user"></i> {{ user.username }}
+                                    {% if user.username == 'admin' %}
+                                    <span class="badge bg-primary ms-1">默认</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    {% if user.is_admin %}
+                                    <span class="badge bg-success">管理员</span>
+                                    {% else %}
+                                    <span class="badge bg-secondary">用户</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.github_token %}
+                                    <i class="fas fa-check-circle text-success"></i> 已配置
+                                    {% else %}
+                                    <i class="fas fa-times-circle text-danger"></i> 未设置
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') }}</td>
+                                <td>
+                                    {% if not user.is_admin %}
+                                    <form method="POST" action="{{ url_for('promote_user', user_id=user.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-success"
+                                                onclick="return confirm('提升 {{ user.username }} 为管理员？')">
+                                            <i class="fas fa-arrow-up"></i> 提升
+                                        </button>
+                                    </form>
+                                    {% elif user.username != 'admin' %}
+                                    <form method="POST" action="{{ url_for('demote_user', user_id=user.id) }}" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-warning"
+                                                onclick="return confirm('降级 {{ user.username }} 为普通用户？')">
+                                            <i class="fas fa-arrow-down"></i> 降级
+                                        </button>
+                                    </form>
+                                    {% else %}
+                                    <span class="text-muted">受保护</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

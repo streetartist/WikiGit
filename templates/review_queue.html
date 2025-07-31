@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}审查队列 - 维基系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tasks"></i> 审查队列</h2>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回仪表盘
+    </a>
+</div>
+
+{% if reviews %}
+<div class="row">
+    {% for review in reviews %}
+    <div class="col-lg-6 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">
+                    <i class="fas fa-file-alt"></i> {{ review.file_path }}
+                </h6>
+                <span class="badge bg-warning">{{ review.status.title() }}</span>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">
+                        <i class="fas fa-user"></i> 作者: {{ review.author.username }}
+                        <i class="fas fa-clock ms-2"></i> {{ review.created_at.strftime('%Y年%m月%d日 %H:%M') }}
+                    </small>
+                </div>
+
+                <div class="mb-3">
+                    <h6>内容预览:</h6>
+                    <div class="border rounded p-2 bg-dark" style="max-height: 150px; overflow-y: auto;">
+                        <pre class="mb-0"><code>{{ review.modified_content[:200] }}{% if review.modified_content|length > 200 %}...{% endif %}</code></pre>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('view_review', review_id=review.id) }}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-eye"></i> 查看差异
+                    </a>
+
+                    <!-- Quick Approve/Reject -->
+                    <button type="button" class="btn btn-success btn-sm" onclick="showActionModal({{ review.id }}, 'approve')">
+                        <i class="fas fa-check"></i> 批准
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="showActionModal({{ review.id }}, 'reject')">
+                        <i class="fas fa-times"></i> 拒绝
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+    <h4>暂无待审查内容</h4>
+    <p class="text-muted">所有提交的更改均已审查。</p>
+    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-primary">
+        <i class="fas fa-tachometer-alt"></i> 返回仪表盘
+    </a>
+</div>
+{% endif %}
+
+<!-- Action Modal -->
+<div class="modal fade" id="actionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="actionModalTitle">审查操作</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" id="actionForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="review_notes" class="form-label">审查备注 (可选)</label>
+                        <textarea class="form-control" id="review_notes" name="review_notes" rows="3" placeholder="添加任何评论或反馈..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn" id="actionButton">提交</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+let currentReviewId = null;
+let currentAction = null;
+
+function showActionModal(reviewId, action) {
+    currentReviewId = reviewId;
+    currentAction = action;
+
+    const modal = document.getElementById('actionModal');
+    const title = document.getElementById('actionModalTitle');
+    const form = document.getElementById('actionForm');
+    const button = document.getElementById('actionButton');
+
+    if (action === 'approve') {
+        title.textContent = '批准审查';
+        form.action = `/approve_review/${reviewId}`;
+        button.textContent = '批准';
+        button.className = 'btn btn-success';
+    } else {
+        title.textContent = '拒绝审查';
+        form.action = `/reject_review/${reviewId}`;
+        button.textContent = '拒绝';
+        button.className = 'btn btn-danger';
+    }
+
+    new bootstrap.Modal(modal).show();
+}
+</script>
+{% endblock %}

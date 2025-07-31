@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+
+{% block title %}用户设置 - 维基系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-cog"></i> 用户设置</h2>
+    <a href="{{ url_for('index') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回主页
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fab fa-github"></i> GitHub 集成</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="github_token" class="form-label">您的 GitHub 个人访问令牌</label>
+                        <input type="password" class="form-control" id="github_token" name="github_token"
+                               value="{{ current_user.github_token or '' }}"
+                               placeholder="ghp_xxxxxxxxxxxxxxxxxxxx">
+                        <div class="form-text">
+                            <i class="fas fa-info-circle"></i>
+                            此令牌将在您创建直接拉取请求时使用。它必须具有“repo”权限。
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> 保存令牌
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle"></i> 账户信息</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-3">用户名:</dt>
+                    <dd class="col-sm-9">{{ current_user.username }}</dd>
+
+                    <dt class="col-sm-3">邮箱:</dt>
+                    <dd class="col-sm-9">{{ current_user.email }}</dd>
+
+                    <dt class="col-sm-3">角色:</dt>
+                    <dd class="col-sm-9">
+                        {% if current_user.is_admin %}
+                        <span class="badge bg-success">管理员</span>
+                        {% else %}
+                        <span class="badge bg-secondary">用户</span>
+                        {% endif %}
+                    </dd>
+
+                    <dt class="col-sm-3">成员起始日期:</dt>
+                    <dd class="col-sm-9">{{ current_user.created_at.strftime('%Y年%m月%d日') }}</dd>
+
+                    <dt class="col-sm-3">GitHub 令牌:</dt>
+                    <dd class="col-sm-9">
+                        {% if current_user.github_token %}
+                        <i class="fas fa-check-circle text-success"></i> 已配置
+                        {% else %}
+                        <i class="fas fa-times-circle text-danger"></i> 未配置
+                        {% endif %}
+                    </dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-question-circle"></i> GitHub 令牌帮助</h6>
+            </div>
+            <div class="card-body">
+                <h6>为什么我需要 GitHub 令牌？</h6>
+                <p class="small">您的个人 GitHub 令牌允许您使用自己的 GitHub 账户直接从维基系统创建拉取请求。</p>
+
+                <h6>如何获取令牌：</h6>
+                <ol class="small">
+                    <li>前往 <strong>GitHub 设置</strong></li>
+                    <li>导航到 <strong>开发者设置</strong></li>
+                    <li>点击 <strong>个人访问令牌</strong> → <strong>令牌（经典）</strong></li>
+                    <li>生成具有 <strong>'repo'</strong> 范围的新令牌</li>
+                    <li>复制并粘贴令牌到此处</li>
+                </ol>
+
+                <div class="alert alert-warning">
+                    <small>
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>安全提示:</strong> 切勿与他人分享您的个人访问令牌。
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-lightbulb"></i> 工作流程选项</h6>
+            </div>
+            <div class="card-body">
+                <h6>作为{{ '管理员' if current_user.is_admin else '用户' }}，您可以：</h6>
+                <ul class="small">
+                    {% if current_user.is_admin %}
+                    <li><i class="fas fa-check text-success"></i> 直接同步到 GitHub</li>
+                    <li><i class="fas fa-check text-success"></i> 作为管理员创建拉取请求</li>
+                    <li><i class="fas fa-check text-success"></i> 审查并批准用户提交</li>
+                    {% endif %}
+                    <li><i class="fas fa-check text-success"></i> 提交更改以供审查</li>
+                    <li><i class="fas fa-check text-success"></i> 创建直接拉取请求（需令牌）</li>
+                    <li><i class="fas fa-check text-success"></i> 编辑所有文档文件</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

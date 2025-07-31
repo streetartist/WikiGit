@@ -1,0 +1,261 @@
+{% extends "base.html" %}
+
+{% block title %}Edit {{ file_path }} - Wiki System{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-edit"></i> Edit: {{ file_path }}</h2>
+    <a href="{{ url_for('file_browser') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Files
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Editor</h5>
+            </div>
+            <div class="card-body p-0">
+                <form method="POST" action="{{ url_for('save_file') }}" id="editor-form">
+                    <input type="hidden" name="file_path" value="{{ file_path }}">
+                    <textarea id="editor" name="content" style="display: none;">{{ content }}</textarea>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        {% if file_path.endswith('.md') %}
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Preview</h6>
+            </div>
+            <div class="card-body">
+                <div id="markdown-preview" class="markdown-content">
+                    <!-- Preview will be rendered here -->
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Save Options</h6>
+            </div>
+            <div class="card-body">
+                {% if current_user.is_admin %}
+                <div class="mb-3">
+                    <button type="button" class="btn btn-success w-100 mb-2" onclick="saveFile('direct_sync')">
+                        <i class="fas fa-cloud-upload-alt"></i> Direct Sync to GitHub
+                    </button>
+                    <button type="button" class="btn btn-primary w-100" onclick="showPRModal('create_pr')">
+                        <i class="fas fa-code-branch"></i> Create Pull Request
+                    </button>
+                </div>
+                <hr>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <button type="button" class="btn btn-warning w-100 mb-2" onclick="saveFile('review')">
+                        <i class="fas fa-eye"></i> Submit for Review
+                    </button>
+                    <button type="button" class="btn btn-info w-100" onclick="showPRModal('direct_pr')">
+                        <i class="fab fa-github"></i> Create Direct PR
+                    </button>
+                </div>
+                
+                <div class="mt-3">
+                    <small class="text-muted">
+                        <strong>Direct Sync:</strong> Push directly to main branch<br>
+                        <strong>Create PR:</strong> Create pull request for review<br>
+                        <strong>Submit for Review:</strong> Internal review workflow<br>
+                        <strong>Direct PR:</strong> Uses your GitHub token
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pull Request Modal -->
+<div class="modal fade" id="prModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Pull Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="pr_title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="pr_title" value="Update {{ file_path }}">
+                </div>
+                <div class="mb-3">
+                    <label for="pr_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="pr_description" rows="4" placeholder="Describe your changes..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPR()">Create PR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Commit Modal -->
+<div class="modal fade" id="commitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Commit Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="commit_message" class="form-label">Commit Message</label>
+                    <input type="text" class="form-control" id="commit_message" value="Update {{ file_path }}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="submitCommit()">Commit & Push</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='js/editor.js') }}"></script>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<script>
+let editor;
+let currentAction = '';
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize CodeMirror
+    const textarea = document.getElementById('editor');
+    const mode = getLanguageMode('{{ file_extension }}');
+    
+    editor = CodeMirror.fromTextArea(textarea, {
+        lineNumbers: true,
+        mode: mode,
+        theme: 'material-darker',
+        lineWrapping: true,
+        autoCloseBrackets: true,
+        matchBrackets: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false
+    });
+    
+    // Auto-resize editor
+    editor.setSize(null, "500px");
+    
+    // Update preview for markdown files
+    {% if file_path.endswith('.md') %}
+    updatePreview();
+    editor.on('change', updatePreview);
+    {% endif %}
+});
+
+function getLanguageMode(extension) {
+    const modes = {
+        '.py': 'python',
+        '.js': 'javascript',
+        '.html': 'htmlmixed',
+        '.css': 'css',
+        '.json': 'javascript',
+        '.md': 'markdown',
+        '.sql': 'sql',
+        '.sh': 'shell',
+        '.yml': 'yaml',
+        '.yaml': 'yaml'
+    };
+    return modes[extension] || 'text';
+}
+
+function updatePreview() {
+    const content = editor.getValue();
+    const preview = document.getElementById('markdown-preview');
+    if (preview) {
+        preview.innerHTML = marked.parse(content);
+    }
+}
+
+function saveFile(action) {
+    currentAction = action;
+    
+    if (action === 'direct_sync') {
+        // Show commit message modal for direct sync
+        new bootstrap.Modal(document.getElementById('commitModal')).show();
+    } else if (action === 'review') {
+        // Submit for review directly
+        submitForm('review');
+    }
+}
+
+function showPRModal(action) {
+    currentAction = action;
+    new bootstrap.Modal(document.getElementById('prModal')).show();
+}
+
+function submitCommit() {
+    const commitMessage = document.getElementById('commit_message').value;
+    const form = document.getElementById('editor-form');
+    
+    // Add commit message to form
+    let commitInput = document.createElement('input');
+    commitInput.type = 'hidden';
+    commitInput.name = 'commit_message';
+    commitInput.value = commitMessage;
+    form.appendChild(commitInput);
+    
+    submitForm('direct_sync');
+    
+    bootstrap.Modal.getInstance(document.getElementById('commitModal')).hide();
+}
+
+function submitPR() {
+    const prTitle = document.getElementById('pr_title').value;
+    const prDescription = document.getElementById('pr_description').value;
+    const form = document.getElementById('editor-form');
+    
+    // Add PR details to form
+    let titleInput = document.createElement('input');
+    titleInput.type = 'hidden';
+    titleInput.name = 'pr_title';
+    titleInput.value = prTitle;
+    form.appendChild(titleInput);
+    
+    let descInput = document.createElement('input');
+    descInput.type = 'hidden';
+    descInput.name = 'pr_description';
+    descInput.value = prDescription;
+    form.appendChild(descInput);
+    
+    submitForm(currentAction);
+    
+    bootstrap.Modal.getInstance(document.getElementById('prModal')).hide();
+}
+
+function submitForm(action) {
+    const form = document.getElementById('editor-form');
+    
+    // Update content from editor
+    document.getElementsByName('content')[0].value = editor.getValue();
+    
+    // Set action
+    let actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = action;
+    form.appendChild(actionInput);
+    
+    form.submit();
+}
+</script>
+{% endblock %}

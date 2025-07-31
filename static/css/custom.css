@@ -1,0 +1,291 @@
+/* Custom styles for Wiki Documentation System */
+
+/* File browser styles */
+.file-tree-item {
+    border-left: 2px solid transparent;
+    transition: border-color 0.2s ease;
+}
+
+.file-tree-item:hover {
+    border-left-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+.folder-header {
+    transition: background-color 0.2s ease;
+}
+
+.folder-header:hover {
+    background-color: rgba(var(--bs-warning-rgb), 0.1);
+}
+
+.folder-contents {
+    border-left: 1px dashed var(--bs-secondary);
+    margin-left: 1rem;
+    padding-left: 1rem;
+}
+
+/* Editor styles */
+.CodeMirror {
+    border: 1px solid var(--bs-border-color);
+    border-radius: 0.375rem;
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace !important;
+}
+
+.CodeMirror-focused {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Markdown preview styles */
+.markdown-content {
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 1rem;
+    background-color: var(--bs-dark);
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4,
+.markdown-content h5,
+.markdown-content h6 {
+    color: var(--bs-primary);
+    margin-top: 1.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.markdown-content h1:first-child,
+.markdown-content h2:first-child,
+.markdown-content h3:first-child {
+    margin-top: 0;
+}
+
+.markdown-content code {
+    background-color: rgba(var(--bs-secondary-rgb), 0.2);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+}
+
+.markdown-content pre {
+    background-color: rgba(var(--bs-dark-rgb), 0.8);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+    overflow-x: auto;
+}
+
+.markdown-content pre code {
+    background: none;
+    padding: 0;
+}
+
+.markdown-content blockquote {
+    border-left: 4px solid var(--bs-primary);
+    padding-left: 1rem;
+    margin: 1rem 0;
+    color: var(--bs-secondary);
+}
+
+.markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1rem 0;
+}
+
+.markdown-content th,
+.markdown-content td {
+    border: 1px solid var(--bs-border-color);
+    padding: 0.5rem;
+    text-align: left;
+}
+
+.markdown-content th {
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+    font-weight: 600;
+}
+
+/* Diff viewer styles */
+.diff-container {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    max-height: 600px;
+    overflow-y: auto;
+    background-color: var(--bs-dark);
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid var(--bs-border-color);
+}
+
+.diff-header {
+    color: var(--bs-info);
+    font-weight: bold;
+    margin: 0.5rem 0;
+}
+
+.diff-range {
+    color: var(--bs-secondary);
+    background-color: rgba(var(--bs-secondary-rgb), 0.1);
+    padding: 0.25rem 0.5rem;
+    margin: 0.5rem 0;
+    border-radius: 0.25rem;
+}
+
+.diff-added {
+    background-color: rgba(var(--bs-success-rgb), 0.2);
+    color: var(--bs-success);
+    padding: 0.1rem 0.5rem;
+    margin: 0.1rem 0;
+    border-left: 3px solid var(--bs-success);
+}
+
+.diff-removed {
+    background-color: rgba(var(--bs-danger-rgb), 0.2);
+    color: var(--bs-danger);
+    padding: 0.1rem 0.5rem;
+    margin: 0.1rem 0;
+    border-left: 3px solid var(--bs-danger);
+}
+
+.diff-context {
+    color: var(--bs-light);
+    padding: 0.1rem 0.5rem;
+    margin: 0.1rem 0;
+}
+
+/* Dashboard styles */
+.stats-card {
+    transition: transform 0.2s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Button animations */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Loading states */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid var(--bs-primary);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .CodeMirror {
+        font-size: 12px;
+    }
+    
+    .file-tree-item {
+        font-size: 14px;
+    }
+    
+    .folder-contents {
+        margin-left: 0.5rem;
+        padding-left: 0.5rem;
+    }
+    
+    .card-body {
+        padding: 1rem 0.75rem;
+    }
+}
+
+/* Print styles */
+@media print {
+    .navbar,
+    .btn,
+    .card-header,
+    .modal {
+        display: none !important;
+    }
+    
+    .container {
+        max-width: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .card {
+        border: none;
+        box-shadow: none;
+    }
+    
+    .CodeMirror,
+    .diff-container {
+        background: white !important;
+        color: black !important;
+        border: 1px solid #ccc !important;
+    }
+}
+
+/* Dark theme enhancements */
+[data-bs-theme="dark"] {
+    --bs-border-color: #495057;
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: var(--bs-dark);
+    border-color: var(--bs-border-color);
+}
+
+[data-bs-theme="dark"] .table {
+    --bs-table-bg: var(--bs-dark);
+    --bs-table-border-color: var(--bs-border-color);
+}
+
+/* Focus styles for accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bs-dark);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--bs-secondary);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--bs-primary);
+}

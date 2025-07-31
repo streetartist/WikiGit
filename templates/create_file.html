@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Create New File - Wiki System{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h3><i class="fas fa-plus"></i> Create New File</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="create-file-form">
+                        <div class="mb-3">
+                            <label for="file_path" class="form-label">File Path</label>
+                            <input type="text" class="form-control" id="file_path" name="file_path" required
+                                   placeholder="e.g., docs/new-document.md or folder/file.txt">
+                            <div class="form-text">Include the full path with filename and extension</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="content" class="form-label">Initial Content (Optional)</label>
+                            <textarea class="form-control" id="content" name="content" rows="10"
+                                      placeholder="Enter initial content for the file..."></textarea>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('file_browser') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            {% if current_user.is_admin %}
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" onclick="handleSave('review')">
+                                    <i class="fas fa-paper-plane"></i> Submit for Review
+                                </button>
+                                <button type="button" class="btn btn-primary" onclick="handleSave('direct_sync')">
+                                    <i class="fas fa-sync"></i> Direct Sync
+                                </button>
+                                <button type="button" class="btn btn-info" onclick="showPRModal('create_pr')">
+                                    <i class="fas fa-code-branch"></i> Create PR
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="showPRModal('direct_pr')">
+                                    <i class="fas fa-user-branch"></i> Direct PR
+                                </button>
+                            </div>
+                            {% else %}
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" onclick="handleSave('review')">
+                                    <i class="fas fa-paper-plane"></i> Submit for Review
+                                </button>
+                                <button type="button" class="btn btn-warning" onclick="showPRModal('direct_pr')">
+                                    <i class="fas fa-code-branch"></i> Create PR
+                                </button>
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mt-3">
+                            <small class="text-muted">
+                                <strong>Submit for Review:</strong> Internal review workflow<br>
+                                {% if current_user.is_admin %}
+                                <strong>Direct Sync:</strong> Push directly to main branch<br>
+                                <strong>Create PR:</strong> Create pull request for review<br>
+                                {% endif %}
+                                <strong>Create PR:</strong> Uses your GitHub token
+                            </small>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Pull Request Modal -->
+<div class="modal fade" id="prModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Pull Request</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="pr_title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="pr_title" value="">
+                </div>
+                <div class="mb-3">
+                    <label for="pr_description" class="form-label">Description</label>
+                    <textarea class="form-control" id="pr_description" rows="4" placeholder="Describe your new file..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitPR()">Create PR</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Commit Modal -->
+<div class="modal fade" id="commitModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Commit Message</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="commit_message" class="form-label">Commit Message</label>
+                    <input type="text" class="form-control" id="commit_message" value="">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitCommit()">Commit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentAction = '';
+
+function handleSave(action) {
+    if (action === 'direct_sync') {
+        // Show commit modal for direct sync
+        const filePath = document.getElementById('file_path').value;
+        document.getElementById('commit_message').value = `Create ${filePath}`;
+        new bootstrap.Modal(document.getElementById('commitModal')).show();
+    } else if (action === 'review') {
+        // Submit for review directly
+        submitForm('review');
+    }
+}
+
+function showPRModal(action) {
+    currentAction = action;
+    const filePath = document.getElementById('file_path').value;
+    document.getElementById('pr_title').value = `Create ${filePath}`;
+    new bootstrap.Modal(document.getElementById('prModal')).show();
+}
+
+function submitCommit() {
+    const commitMessage = document.getElementById('commit_message').value;
+    const form = document.getElementById('create-file-form');
+
+    // Add commit message to form
+    let commitInput = document.createElement('input');
+    commitInput.type = 'hidden';
+    commitInput.name = 'commit_message';
+    commitInput.value = commitMessage;
+    form.appendChild(commitInput);
+
+    submitForm('direct_sync');
+
+    bootstrap.Modal.getInstance(document.getElementById('commitModal')).hide();
+}
+
+function submitPR() {
+    const prTitle = document.getElementById('pr_title').value;
+    const prDescription = document.getElementById('pr_description').value;
+    const form = document.getElementById('create-file-form');
+
+    // Add PR details to form
+    let titleInput = document.createElement('input');
+    titleInput.type = 'hidden';
+    titleInput.name = 'pr_title';
+    titleInput.value = prTitle;
+    form.appendChild(titleInput);
+
+    let descInput = document.createElement('input');
+    descInput.type = 'hidden';
+    descInput.name = 'pr_description';
+    descInput.value = prDescription;
+    form.appendChild(descInput);
+
+    submitForm(currentAction);
+
+    bootstrap.Modal.getInstance(document.getElementById('prModal')).hide();
+}
+
+function submitForm(action) {
+    const form = document.getElementById('create-file-form');
+
+    // Add action to form
+    let actionInput = document.createElement('input');
+    actionInput.type = 'hidden';
+    actionInput.name = 'action';
+    actionInput.value = action;
+    form.appendChild(actionInput);
+
+    form.submit();
+}
+</script>
+
+{% endblock %}

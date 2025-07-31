@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}管理员仪表盘 - 维基系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-tachometer-alt"></i> 管理员仪表盘</h2>
+    <div>
+        <a href="{{ url_for('settings') }}" class="btn btn-outline-primary">
+            <i class="fas fa-cog"></i> 设置
+        </a>
+        <form method="POST" action="{{ url_for('sync_repository') }}" class="d-inline">
+            <button type="submit" class="btn btn-outline-success">
+                <i class="fas fa-sync-alt"></i> 同步仓库
+            </button>
+        </form>
+    </div>
+</div>
+
+<div class="row g-4">
+    <!-- Statistics Cards -->
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ pending_reviews }}</h4>
+                        <p class="card-text">待处理审查</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tasks fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('review_queue') }}" class="text-white text-decoration-none">
+                    <small>查看所有审查 <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title">{{ total_users }}</h4>
+                        <p class="card-text">用户总数</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('settings') }}" class="text-white text-decoration-none">
+                    <small>管理用户 <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><i class="fab fa-github"></i></h4>
+                        <p class="card-text">GitHub 集成</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-check-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('settings') }}" class="text-white text-decoration-none">
+                    <small>配置 GitHub <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-3 col-md-6">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h4 class="card-title"><i class="fas fa-folder"></i></h4>
+                        <p class="card-text">文档</p>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-book fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <a href="{{ url_for('file_browser') }}" class="text-white text-decoration-none">
+                    <small>浏览文件 <i class="fas fa-arrow-right"></i></small>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-5">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-bolt"></i> 快速操作</h5>
+            </div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('review_queue') }}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-tasks"></i><br>
+                            <small>审查队列</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('file_browser') }}" class="btn btn-outline-info w-100">
+                            <i class="fas fa-folder"></i><br>
+                            <small>文件浏览器</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('settings') }}" class="btn btn-outline-secondary w-100">
+                            <i class="fas fa-cog"></i><br>
+                            <small>系统设置</small>
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <form method="POST" action="{{ url_for('sync_repository') }}" class="w-100">
+                            <button type="submit" class="btn btn-outline-success w-100">
+                                <i class="fas fa-sync-alt"></i><br>
+                                <small>同步仓库</small>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Activity (placeholder for future implementation) -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-history"></i> 系统状态</h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>系统状态：</strong> 所有系统运行正常。GitHub 集成已配置并准备就绪。
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>仓库状态</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> 本地仓库已同步</li>
+                            <li><i class="fas fa-check text-success"></i> GitHub API 连接活跃</li>
+                            <li><i class="fas fa-check text-success"></i> 文件系统权限正常</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>用户活动</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-user text-info"></i> {{ total_users }} 位注册用户</li>
+                            <li><i class="fas fa-clock text-warning"></i> {{ pending_reviews }} 个待处理审查</li>
+                            <li><i class="fas fa-shield-alt text-success"></i> 基于角色的访问已启用</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

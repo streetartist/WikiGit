@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}登录 - 维基系统{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card">
+            <div class="card-header text-center">
+                <h4><i class="fas fa-sign-in-alt"></i> 登录</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">用户名</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="password" class="form-label">密码</label>
+                        <input type="password" class="form-control" id="password" name="password" required>
+                    </div>
+
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-sign-in-alt"></i> 登录
+                        </button>
+                    </div>
+                </form>
+
+                <div class="text-center mt-3">
+                    <p class="mb-0">还没有账户？ <a href="{{ url_for('register') }}">在此注册</a></p>
+                </div>
+
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <strong>默认普通用户:</strong><br>
+                        用户名: test<br>
+                        密码: 123456<br>
+                        <strong>默认普通用户仅用于试用，实际提交文档最好注册自己的账户！</strong>
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
